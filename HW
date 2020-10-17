@@ -1,0 +1,256 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_set>
+using namespace std;
+
+/****************************************************************/
+/*EXERCISE 1 PART A: a & b
+
+Checks if the expression is a valid polynomial. Parentheses or negation are not allowed. Spaces
+should be ignored. E.g., the following are valid
+
+ASSUMPTIONS: polynomial is written ins implied form, for example 
+
+n^3+ n^2 + n and not n^2*n^2->n^4
+*/
+/****************************************************************/
+
+// will output the polynomial's (ex: n^2, 2n^2) Big O Notation 
+void outputBigO(const string poly){
+    cout << "O(" << poly <<")" << endl;
+}
+
+
+bool isDigit(char c){
+    int num;
+    try{
+        num = (int)c -48;
+        if (num < 0 || num > 9){
+            return false;
+        }
+        
+    }catch(exception &exception){
+        return false;
+        throw ("");
+    }
+    
+    return true;
+}
+/* returns the valid polynomial from the expression
+    if there are multiple valid polynomails (returns the first one found)
+    if no polynomial is contained in the expression or polynomial
+    is invalid, returns "Invalid"
+*/
+string getPolynomial(const string expression){
+  vector<string> polys;
+  string poly;
+  size_t index = expression.find("n^");
+  int exprLength = expression.length();
+  int degreeLen = 0;
+  string degree = "";
+
+  while (index != string::npos){
+
+    try{
+      //get degree as a str
+      char curr = expression[index+2 + degreeLen];
+     
+      while(isDigit(curr) == true){
+          degree+= curr;
+          degreeLen++;
+          if ((index+2 + degreeLen) < exprLength){
+              curr = expression[index+2 + degreeLen];
+             
+          }else{
+              break;
+          }
+         
+      }
+      
+      //get length of degree
+      degreeLen = degree.length();
+      
+      // check the char after degree, only valid character after a polynomial can be '+'
+      if ((index+2+degreeLen < exprLength) && (expression[index+2+degreeLen] != '+')){
+        return "Invalid";
+      
+      }
+      poly = expression.substr(index, 2+ degreeLen);
+      polys.push_back(poly);
+      index = expression.find("n^", index+2+degreeLen);
+      
+    }catch(exception &out_of_range){
+        throw("");
+        return "Invalid";
+    }
+  }
+  
+  if (poly.size() != 0){
+    return polys.at(0);
+  }
+  return "Invalid";
+}
+
+/*returns expression without whitespace if if does not contain paranthesis or negation
+return empty string if invalid */
+string getValidExpression(const string expression, const string invalid){
+  string newStr;
+  char curr;
+  for (int i = 0; i < expression.length(); i++){
+    curr = expression[i];
+    if ((curr == invalid[0]) || (curr == invalid[1]) || (curr == invalid[2])){
+      return "Invalid";
+    }else{
+      if (curr != ' '){
+        newStr += curr;
+      }
+    }
+  }
+  return newStr;
+}
+
+
+// if user enters 'O' or 'o' will print Big O, if user
+// enters any other char, will just check validity
+void checkExpression(string expression, char choice){
+
+    string invalid = "(-)";
+    string validExpresion = getValidExpression(expression, invalid);
+    string poly;
+
+    if (validExpresion.compare("Invalid") != 0){
+        poly = getPolynomial(validExpresion);
+        
+        if (poly.compare("Invalid") != 0){
+            cout << expression << " is a Valid Polynomial." << endl;
+            if (choice == 'O' || choice == 'o'){
+                outputBigO(poly);
+            }
+        }else{
+            cout << expression << " is NOT a Valid Polynomial." << endl;
+        }
+    }else{
+        cout << expression << " is NOT a Valid Polynomial." << endl;
+    }
+}
+
+
+// example of how to use checkExpression function
+// int main(){
+//     string expression1 = "n^2+2*n+5";
+//     string expression2 = "2*n + 4.54* n^5 +4 +5*n";
+//     string expression3 = "n^3n";
+//     string expression4 = "n^4.2";
+//     string expression5 = "5n";
+//     string expression6 = "n^3 -3*n";
+//     string expression7 = "n^2 + n^9 + n^7";
+  
+//     checkExpression(expression1, 'o');
+
+  
+//     return 0;
+// }
+
+/****************************************************************/
+//B. O(m), getValidExpression & getPolynomial functions are O(m), the rest are O(1)  --> O(m)
+
+/****************************************************************/
+//C.
+
+
+
+
+/****************************************************************/
+
+//EXERCISE 2 PART A & B
+
+/****************************************************************/
+//helper method for findSubset method
+void insertionSort(int* arr, int n)  
+{  
+    
+    int insertIndex, key, probeIndex;  
+    for (insertIndex = 1; insertIndex < n; insertIndex++) 
+    {  
+        key = arr[insertIndex];  
+        probeIndex = insertIndex - 1;  
+  
+        while (probeIndex > 0 && arr[probeIndex-1] < key) 
+        {  
+            arr[probeIndex + 1] = arr[probeIndex];  
+            probeIndex = probeIndex - 1;  
+        }  
+        arr[probeIndex + 1] = key;  
+    }  
+} 
+
+//A
+/* Given an array A of n integers and an integer s, find a subset of the integers in A such that their product is s. */
+
+set<int> findSubset(int arr[], int size, int s){
+    set<int> multiples;
+    set<int> returnSet;
+    int * sortedMultiples;
+    int length, index = 0;
+    int copy = s;
+
+    
+    for (int i = 0; i < size; i++){
+        int num = arr[i];
+        if (s%num == 0){             // only if it's a multiple
+            multiples.insert(num);
+        }
+    }
+    
+    
+    // create array of multiples
+    length = multiples.size();
+    sortedMultiples = new int[length];
+    
+    
+    for(auto it = multiples.begin(); it != multiples.end(); ++it){
+        sortedMultiples[index] = *it;
+        ++index;
+    }
+    
+
+    //sort array
+    insertionSort(sortedMultiples, length);
+   
+   
+   // find subSet
+    for (int i = 0; i < length; ++i){
+        copy = s;
+        for (auto j = i; j < length; ++j){
+            int num = sortedMultiples[j];
+            if (num!= 0 && copy% num == 0){
+                copy = copy/(num);
+                returnSet.insert(num);
+                
+                if (copy == 1){
+                    delete[] sortedMultiples;
+                    return returnSet;
+                }
+                
+            }
+           
+        }
+        returnSet.clear();
+    }
+    
+    delete[] sortedMultiples;
+    return returnSet;
+}
+
+
+/*EX of how to use function: set<int> subSet = findSubset(test, 5, -20); */
+/****************************************************************/
+
+// B
+/* Asymptotic complexity:
+O(n^2)
+Θ(n^2)
+Ω(n^2) */
+
+
